@@ -1,26 +1,209 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* ------------------------------------------------------------------
+   DESIGN TOKENS — the only source of colour, type, space and motion.
+   Theme: dark by default. Add `theme-light` to any section to flip it.
+   Utilities read theme variables, so components never hard-code colour.
+   Contrast (WCAG): fg/bg 15.9 · muted/bg 5.9 · accent/bg 6.2 ·
+   light: fg/bg 14.9 · muted/bg 5.4 · accent/bg 9.6
+   ------------------------------------------------------------------ */
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-*: initial;
+  --color-bg: var(--bg);
+  --color-panel: var(--panel);
+  --color-grid: var(--grid);
+  --color-line: var(--line);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-photo: var(--photo);
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  --font-display: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@theme {
+  /* Type scale */
+  --text-hero: clamp(2.75rem, 1rem + 7.2vw, 8.5rem);
+  --text-hero--line-height: 0.9;
+  --text-hero--letter-spacing: -0.045em;
+  --text-display-l: clamp(2.5rem, 1.4rem + 4.4vw, 6rem);
+  --text-display-l--line-height: 0.95;
+  --text-display-l--letter-spacing: -0.04em;
+  --text-display-m: clamp(1.75rem, 1.2rem + 2.2vw, 3.25rem);
+  --text-display-m--line-height: 1.05;
+  --text-display-m--letter-spacing: -0.03em;
+  --text-statement: clamp(1.625rem, 1.1rem + 1.9vw, 3rem);
+  --text-statement--line-height: 1.12;
+  --text-statement--letter-spacing: -0.025em;
+  --text-numeral: clamp(4rem, 2rem + 7vw, 8.5rem);
+  --text-numeral--line-height: 0.9;
+  --text-numeral--letter-spacing: -0.05em;
+  --text-title: 1.5rem;
+  --text-title--line-height: 1.2;
+  --text-title--letter-spacing: -0.02em;
+  --text-lead: 1.125rem;
+  --text-lead--line-height: 1.55;
+  --text-body: 1rem;
+  --text-body--line-height: 1.6;
+  --text-small: 0.875rem;
+  --text-small--line-height: 1.5;
+  --text-label: 0.75rem;
+  --text-label--line-height: 1.4;
+  --text-label--letter-spacing: 0.08em;
+
+  /* Spacing — 8px base. p-1 = 8px, p-2 = 16px … */
+  --spacing: 8px;
+
+  --container-page: 1536px;
+  --breakpoint-sm: 40rem;
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 64rem;
+  --breakpoint-xl: 80rem;
+
+  /* Motion — mirrored in src/lib/motion.ts */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-fast: 160ms;
+  --duration-base: 320ms;
+  --duration-slow: 720ms;
+  --duration-draw: 1200ms;
+}
+
+/* ---------- themes ---------- */
+:root,
+.theme-dark {
+  --bg: #0e0f11;
+  --panel: #16171a;
+  --grid: #1d1f22;
+  --line: #2a2c30;
+  --fg: #eceae4;
+  --muted: #8e8f8c;
+  --faint: #3a3c40;   /* unrevealed statement words, decorative only */
+  --accent: #8a86f2;  /* logo indigo, lifted to read on dark (6.2:1) */
+  --accent-fg: #0e0f11;
+  --photo: #e9e8e3;   /* card behind white-background product photos */
+  color-scheme: dark;
+}
+.theme-light {
+  --bg: #e9e8e3;
+  --panel: #f3f2ee;
+  --grid: #dddcd6;
+  --line: #c9c7c0;
+  --fg: #141518;
+  --muted: #5c5d60;
+  --faint: #c3c2bc;
+  --accent: #312e75;  /* exact logo indigo */
+  --accent-fg: #ffffff;
+  --photo: #f3f2ee;
+  color-scheme: light;
+}
+.theme-dark, .theme-light { background: var(--bg); color: var(--fg); }
+
+:root {
+  --gutter: 24px;
+  --margin: 16px;
+  --header-h: 80px;
+}
+@media (min-width: 48rem) { :root { --margin: 32px; } }
+@media (min-width: 80rem) { :root { --margin: 48px; } }
+
+/* ---------- utilities ---------- */
+@utility page-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  column-gap: var(--gutter);
+  max-width: var(--container-page);
+  margin-inline: auto;
+  padding-inline: var(--margin);
+  @media (min-width: 48rem) { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+}
+@utility page-x {
+  max-width: var(--container-page);
+  margin-inline: auto;
+  padding-inline: var(--margin);
+}
+@utility display {
+  font-family: var(--font-display);
+  font-weight: 500;
+}
+@utility label {
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  line-height: var(--text-label--line-height);
+  letter-spacing: var(--text-label--letter-spacing);
+  text-transform: uppercase;
+}
+/* Engineering-paper grid background (static, decorative) */
+@utility bg-blueprint {
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-position: -1px -1px;
+}
+/* Small square bullet in accent — the site's section marker */
+@utility marker {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  flex: none;
+}
+
+/* Entrance keyframes (run before hydration) */
+@keyframes rise { from { transform: translateY(105%); } }
+@keyframes appear { from { opacity: 0; } }
+@keyframes ticker { to { transform: translateX(-50%); } }
+/* letter "turns" up into place, like a turn being laid */
+@keyframes turn-in {
+  from { transform: translateY(70%) rotateX(-85deg); opacity: 0; }
+}
+@utility enter-turn {
+  display: inline-block;
+  transform-origin: 50% 100%;
+  animation: turn-in var(--duration-slow) var(--ease-out) both;
+  animation-delay: var(--delay, 0ms);
+}
+@utility enter-rise {
+  animation: rise var(--duration-slow) var(--ease-out) both;
+  animation-delay: var(--delay, 0ms);
+}
+@utility enter-fade {
+  animation: appear var(--duration-slow) var(--ease-out) both;
+  animation-delay: var(--delay, 0ms);
+}
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+    -webkit-font-smoothing: antialiased;
   }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  ::selection { background: var(--accent); color: var(--accent-fg); }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Lenis */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
 }
